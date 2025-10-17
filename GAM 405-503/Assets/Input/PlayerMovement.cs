@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -21,6 +22,10 @@ public class PlayerMovement : MonoBehaviour
     Vector2 moveInput;
     Vector2 lookInput;
     float pitch = 0f; // up/down
+    private bool rollRequested = false;
+    private Coroutine rollCoroutine = null;
+    [SerializeField] private float rollForce = 5f;
+    [SerializeField] private float rollDuration = 5f;
 
     void Awake()
     {
@@ -47,16 +52,22 @@ public class PlayerMovement : MonoBehaviour
     {
         moveInput = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
         lookInput = lookAction != null ? lookAction.action.ReadValue<Vector2>() : Vector2.zero;
-        rollAction?.action.WasPerformedThisFrame();
 
-        HandleLook();
-        HandleRoll();
+        // record roll request (don't call physics here)
+        rollRequested = (rollAction != null && rollAction.action.WasPressedThisFrame());
+
+        //HandleLook();
     }
 
     void FixedUpdate()
     {
         HandleMovement();
-        
+
+        if (rollRequested)
+        {
+            rollRequested = false;
+            HandleRoll();
+        }
     }
 
     void HandleLook()
@@ -87,16 +98,25 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = transform.TransformDirection(inputDir) * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + move);
     }
-    
 
     private void HandleRoll()
     {
-        if (rollAction != null && rollAction.action.WasPerformedThisFrame())
-        {
-            // perform roll action
-            rb.constraints = RigidbodyConstraints.None;
-            rb.AddForce(transform.forward * 5f, ForceMode.VelocityChange);
-            Debug.Log("Roll action performed");
-        }
+        if (rollCoroutine != null) return; // prevent stacking rolls
+        rollCoroutine = StartCoroutine(DoRoll());
+    }
+
+    private IEnumerator DoRoll()
+    {
+        var originalConstraints = rb.constraints;
+        // allow rotation/movement during the roll if desired
+        rb.constraints = RigidbodyConstraints.None;
+
+        rb.AddForce(transform.forward * rollForce, ForceMode.VelocityChange);
+        Debug.Log("Roll action performed");
+
+        yield return new WaitForSeconds(rollDuration);
+
+        rb.constraints = originalConstraints;
+        rollCoroutine = null;
     }
 }

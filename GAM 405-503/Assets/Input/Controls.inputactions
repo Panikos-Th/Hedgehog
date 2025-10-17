@@ -26,12 +26,12 @@
                 },
                 {
                     "name": "Abilities",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "fb92492a-e6fd-4f3e-a1c1-29a868273561",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
+                    "interactions": "Tap",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
