@@ -14,13 +14,13 @@ public class PlayerControler : MonoBehaviour
     public bool isRolling = false;
     public bool isWalking = true;
 
-   
+
 
     [SerializeField] private Vector2 moveInput;
 
     [SerializeField] private Rigidbody rb;
 
-     enum PlayerSate
+    enum PlayerSate
     {
         Walking,
         Rolling
@@ -51,12 +51,14 @@ public class PlayerControler : MonoBehaviour
     void OnEnable()
     {
         moveAction?.action.Enable();
-        rollAction?.action.Enable();
+
         if (rollAction != null)
         {
-            rollAction.action.performed += OnRollPressed;  // Shift down -> start roll
-            rollAction.action.canceled += OnRollReleased; // Shift up   -> stop roll
             rollAction.action.Enable();
+            // use started so press reliably fires for buttons
+            rollAction.action.started += OnRollPressed;
+            rollAction.action.canceled += OnRollReleased;
+            Debug.Log("rollAction bound: " + rollAction.action.name);
         }
 
     }
@@ -65,7 +67,7 @@ public class PlayerControler : MonoBehaviour
         moveAction?.action.Disable();
         if (rollAction != null)
         {
-            rollAction.action.performed -= OnRollPressed;
+            rollAction.action.started -= OnRollPressed;
             rollAction.action.canceled -= OnRollReleased;
             rollAction.action.Disable();
         }
@@ -76,6 +78,8 @@ public class PlayerControler : MonoBehaviour
     {
         isRolling = true;
         Debug.Log("Roll started");
+        // start only once on press
+        StartCoroutine(RollDuration(new WaitForSeconds(5f)));
     }
 
     void OnRollReleased(InputAction.CallbackContext _)
@@ -122,36 +126,36 @@ public class PlayerControler : MonoBehaviour
         isRolling = false;
     }
 
-    private void SateSwitcher()
-    {
-        switch(currentState)
-        {
-            case PlayerSate.Walking:
-                HandleMovement();
-                break;
-            case PlayerSate.Rolling:
-                HandleRolling();
-                break;
-        }
-      
-    }
+    /* private void SateSwitcher()
+     {
+         switch(currentState)
+         {
+             case PlayerSate.Walking:
+                 HandleMovement();
+                 break;
+             case PlayerSate.Rolling:
+                 HandleRolling();
+                 break;
+         }
 
-    private void HandleRolling()
-    {
-        
-          Vector2 playerInput;
-        playerInput.x = Input.GetAxis("Horizontal");
-        playerInput.y = Input.GetAxis("Vertical");
+     }
 
-        playerInput = Vector2.ClampMagnitude(playerInput, 1f);
-        Vector3 desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
-        float maxSpeedChange = maxAcceleration * Time.deltaTime;
-        velocity.x =
-            Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
-        velocity.z =
-            Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
-                
-        rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
-        // Rolling logic here
-    }
+     private void HandleRolling()
+     {
+
+           Vector2 playerInput;
+         playerInput.x = Input.GetAxis("Horizontal");
+         playerInput.y = Input.GetAxis("Vertical");
+
+         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
+         Vector3 desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+         float maxSpeedChange = maxAcceleration * Time.deltaTime;
+         velocity.x =
+             Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
+         velocity.z =
+             Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
+
+         rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
+         // Rolling logic here
+     }*/
 }

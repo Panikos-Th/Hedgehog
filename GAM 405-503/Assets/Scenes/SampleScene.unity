@@ -709,7 +709,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 506548615}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf5c198ff6e8cea4794647a6f0c856cd, type: 3}
   m_Name: 
@@ -718,6 +718,7 @@ MonoBehaviour:
   rollAction: {fileID: -1769057300769812323, guid: 2c80f358114023746a99779853c7fdf4, type: 3}
   moveSpeed: 5
   isRolling: 0
+  isWalking: 1
   moveInput: {x: 0, y: 0}
   rb: {fileID: 0}
 --- !u!114 &506548625
