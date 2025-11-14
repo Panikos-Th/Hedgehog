@@ -35,10 +35,18 @@ public class HedgehogController : MonoBehaviour
         {
             ToggleRotationContrainsts();
         }
+        else if (Input.GetKeyUp(KeyCode.E))
+        {
+            rb.constraints |= RigidbodyConstraints.FreezeRotation;
+            this.transform.rotation = initialTransform.rotation;
+        }
+        
 
     }
     void FixedUpdate()
     {
+
+
         Movement();
         LookAtCamera();
     }
@@ -88,7 +96,7 @@ public class HedgehogController : MonoBehaviour
         rb.linearVelocity = currentVelocity;
     }
 
-    private void LookAtCamera() 
+    private void LookAtCamera()
     {
         if (cameraTransform == null || rb == null)
             return;
@@ -100,7 +108,7 @@ public class HedgehogController : MonoBehaviour
             return;
 
         Quaternion targetRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
+        // rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
     }
 
     private void ToggleRotationContrainsts()
@@ -113,10 +121,6 @@ public class HedgehogController : MonoBehaviour
         {
             rb.constraints &= ~RigidbodyConstraints.FreezeRotation;
         }
-        else
-        {
-            rb.constraints |= RigidbodyConstraints.FreezeRotation;
-            this.transform.rotation = initialTransform.rotation;
-        }
+        
     }
 }
