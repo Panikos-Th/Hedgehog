@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public GameObject currentInteractable;
+
+    public float sphereRadius;
     public InputActionReference moveAction;
     public InputActionReference interactAction;
 
@@ -53,6 +57,22 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Interact Pressed");
 
+        if(Physics.CheckSphere(transform.position, sphereRadius, LayerMask.GetMask("Interactable")))
+        {
+            Debug.Log("Player in range to interact with something");
+
+            if (currentInteractable != null)
+            {
+                Debug.Log("Interacting with " + currentInteractable.name);
+                // Example interaction: pick up the object
+                currentInteractable.transform.SetParent(hands.transform);
+                currentInteractable.transform.localPosition = Vector3.zero;
+                currentInteractable.transform.localRotation = Quaternion.identity;
+            }
+        }
+
+        
+
         // Pick up or interact logic here
         
     }
@@ -75,6 +95,7 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         HandleMovement();
+        
     }
 
 

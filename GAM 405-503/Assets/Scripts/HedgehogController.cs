@@ -1,3 +1,4 @@
+using UnityEditor.U2D;
 using UnityEngine;
 
 public class HedgehogController : MonoBehaviour
@@ -13,11 +14,21 @@ public class HedgehogController : MonoBehaviour
 
     [SerializeField]
     public Transform cameraTransform;
-    public Transform initialTransform;
+    private Quaternion initialRotation;
+
+    private MeshRenderer meshRendererBall;
+    public MeshRenderer meshRendererHog0;
+    public MeshRenderer meshRendererHog1;
+    public MeshRenderer meshRendererHog2;
+    public MeshRenderer meshRendererHog3;
+    public GameObject hedgehogModel;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+
+        meshRendererBall = GetComponent<MeshRenderer>();
+
 
 
         if (cameraTransform == null && Camera.main != null)
@@ -26,8 +37,13 @@ public class HedgehogController : MonoBehaviour
 
     void Start()
     {
+        meshRendererBall.enabled = false;
+        meshRendererHog0.enabled = true;
+        meshRendererHog1.enabled = true;
+        meshRendererHog2.enabled = true;
+        meshRendererHog3.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
-        initialTransform = this.transform;
+        initialRotation = this.transform.rotation;
     }
     void Update()
     {
@@ -38,9 +54,16 @@ public class HedgehogController : MonoBehaviour
         else if (Input.GetKeyUp(KeyCode.E))
         {
             rb.constraints |= RigidbodyConstraints.FreezeRotation;
-            this.transform.rotation = initialTransform.rotation;
+            this.transform.rotation = initialRotation;
+
+            meshRendererBall.enabled = false;
+
+            meshRendererHog0.enabled = true;
+            meshRendererHog1.enabled = true;
+            meshRendererHog2.enabled = true;
+            meshRendererHog3.enabled = true;
         }
-        
+
 
     }
     void FixedUpdate()
@@ -53,6 +76,9 @@ public class HedgehogController : MonoBehaviour
 
     private void Movement()
     {
+        //this.transform.rotation = Camera.main.transform.rotation;
+        
+
         Vector2 playerInput;
         playerInput.x = Input.GetAxis("Horizontal");
         playerInput.y = Input.GetAxis("Vertical");
@@ -98,17 +124,27 @@ public class HedgehogController : MonoBehaviour
 
     private void LookAtCamera()
     {
-        if (cameraTransform == null || rb == null)
-            return;
+        if (cameraTransform == null || hedgehogModel == null)
+        return;
 
-        Vector3 lookDirection = cameraTransform.position - transform.position;
-        lookDirection.y = 0f;
+    // If ball is active → rolling → don't rotate hedgehog model
+    if (meshRendererBall != null && meshRendererBall.enabled)
+        return;
 
-        if (lookDirection.sqrMagnitude < 0.001f)
-            return;
+    // Face the camera direction (but keep the model upright)
+    Vector3 forward = cameraTransform.forward;
+    forward.y = 0f;
 
-        Quaternion targetRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
-        // rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
+    if (forward.sqrMagnitude < 0.01f)
+        return;
+
+    Quaternion targetRotation = Quaternion.LookRotation(forward, Vector3.up);
+
+    hedgehogModel.transform.rotation = Quaternion.Slerp(
+        hedgehogModel.transform.rotation,
+        targetRotation,
+        10f * Time.deltaTime
+    );
     }
 
     private void ToggleRotationContrainsts()
@@ -117,10 +153,16 @@ public class HedgehogController : MonoBehaviour
 
         bool isRotationFrozen = (rb.constraints & RigidbodyConstraints.FreezeRotation) == RigidbodyConstraints.FreezeRotation;
 
+        meshRendererBall.enabled = true;
+        meshRendererHog0.enabled = false;
+        meshRendererHog1.enabled = false;
+        meshRendererHog2.enabled = false;
+        meshRendererHog3.enabled = false;
+
         if (isRotationFrozen)
         {
             rb.constraints &= ~RigidbodyConstraints.FreezeRotation;
         }
-        
+
     }
 }
